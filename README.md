@@ -1,36 +1,33 @@
-# Annotated Text Corpus Query Tool
+# Corpus Search
 
-This project implements a tool for querying an annotated text corpus efficiently. The corpus consists of sentences where each token (word, punctuation, etc.) is annotated with attributes such as:
+A high-performance tool for querying annotated text corpora using optimized set operations and indexing techniques.
+## References
 
-- **word**: The actual token
-- **c5**: A fine-grained word class tag
-- **lemma**: The dictionary form of the word
-- **pos**: A coarse-grained part-of-speech tag (e.g., noun, verb, adjective)
+This project is inspired by the paper: *Efficient corpus search using unary and binary indexes* by Peter Ljunglöf and Nicholas Smallbone.
+
+## Overview
+
+This project implements an efficient corpus search engine inspired by the paper "Efficient corpus search using unary and binary indexes" by Peter Ljunglöf and Nicholas Smallbone. It allows users to query annotated text corpora with a simple but powerful query language, using advanced data structures and algorithms for optimal performance.
 
 ## Features
 
-- **Basic Query Processor**: Allows queries based on token attributes using a simple query language.
-- **Indexing for Optimization**: Reduces memory usage by storing unique strings as integers and pre-compiling attribute indexes.
-- **Set-Based Query Matching**: Uses set operations (intersection, difference, complement) for efficient multi-clause queries.
-- **Accelerated Query Execution**: Implements binary search-based optimizations for fast set intersections and differences.
+- **Efficient Indexing**: Pre-compiles indexes for fast attribute-based searches
+- **Optimized Set Operations**: Uses specialized intersection and difference algorithms
+- **Powerful Query Language**: Simple syntax for complex queries
+- **Multiple Search Strategies**: Automatically chooses the most efficient search algorithm based on set sizes
+- **Memory Optimization**: Uses integer encoding to minimize memory usage
 
-## Query Language
+## Corpus Format
 
-A query is a sequence of clauses, each matching a token. Clauses contain attribute-based conditions:
+The tool works with annotated text corpora where each token has four attributes:
 
-- `[lemma="house"]` — Matches tokens with lemma "house".
-- `[pos="ART"] [lemma="house"]` — Matches an article followed by "house".
-- `[lemma="house" pos!="VERB"]` — Matches "house" but not as a verb.
+- **word**: The actual characters in the word
+- **c5**: A fine-grained word class tag
+- **lemma**: The lemmatized (dictionary) form of the word
+- **pos**: A coarse-grained part-of-speech tag (e.g., noun, verb, adjective)
 
-## Optimization Techniques
-
-- **String Deduplication**: Stores unique attribute values as integers to save memory.
-- **Precomputed Indexing**: Maps attribute values to token positions for fast lookups.
-- **Efficient Query Execution**: Translates queries into set operations for quick processing.
-- **Binary Search Accelerations**: Speeds up intersection and difference operations when one set is significantly smaller.
-
-## Example Corpus Format
-
+Supported part-of-speech tags include SUBST (noun), ADJ, VERB, ADV, ART, PREP, PRON, CONJ, INTERJ, and various punctuation tags.
+### Example corpus sentence
 ```
 # sentence 14, Texts/A/A0/A00.xml
 there   EX0     there   PRON
@@ -43,10 +40,57 @@ currently       AV0     currently       ADV
 available       AJ0     available       ADJ
 .       PUN     .       PUN
 ```
+## Query Language
 
-## References
+The query language follows this grammar:
 
-This project is inspired by the paper: *Efficient corpus search using unary and binary indexes* by Peter Ljunglöf and Nicholas Smallbone.
+```
+<query>     ::= <clause> { <clause> } 
+<clause>    ::= '[' , { <literal> } , ']' 
+<literal>   ::= <attribute> , ( '=' | '!=' ) , <value> 
+<attribute> ::= 'word' | 'c5' | 'lemma' | 'pos'
+<value>     ::= '"' , <string> , '"'
+```
+
+Examples of valid queries:
+- `[]` (matches any token)
+- `[lemma="house"]` (matches tokens with lemma "house")
+- `[lemma="house" pos!="VERB"]` (matches non-verb tokens with lemma "house")
+- `[pos="ART"] [lemma="house"]` (matches an article followed by "house")
+
+## Implementation Details
+
+### Optimized Data Structures
+
+- **Token Representation**: Integer-encoded strings for memory efficiency
+- **Set Types**:
+  - **IndexSet**: For indexes with a shift value
+  - **ExplicitSet**: For explicit enumerations of token positions
+  - **DenseSet**: For representing ranges of consecutive positions
+  - **MatchSet**: Wraps other set types with a complement flag
+
+### Search Algorithms
+
+The project implements multiple search strategies:
+- Linear intersection for similarly sized sets
+- Binary search-based intersection when one set is much smaller
+- Specialized algorithms for dense sets
+- Automatic selection of the optimal algorithm based on set characteristics
+
+### Optimization Techniques
+
+- **String Deduplication**: Stores unique attribute values as integers to save memory.
+- **Precomputed Indexing**: Maps attribute values to token positions for fast lookups.
+- **Efficient Query Execution**: Translates queries into set operations for quick processing.
+- **Binary Search Accelerations**: Speeds up intersection and difference operations when one set is significantly smaller.
+
+### Query Processing
+
+Queries are processed by:
+1. Parsing the query string into a structured representation
+2. Converting each clause and literal into appropriate set operations
+3. Applying optimized intersection and difference operations
+4. Converting the results back into concrete token matches
 
 ## Future Work
 
@@ -54,3 +98,20 @@ This project is inspired by the paper: *Efficient corpus search using unary and 
 - Enhanced query language with more complex filters
 - Parallelized query execution for better performance
 
+## Usage
+
+```cpp
+// Load corpus from file
+Corpus corpus = load_corpus("path/to/corpus.txt");
+
+// Execute a query
+std::vector<Match> results = match(corpus, "[pos=\"ART\"] [lemma=\"house\"]");
+
+// Process results
+for (const Match& m : results) {
+    // Access match information
+    int sentence_index = m.sentence;
+    int position = m.position;
+    int length = m.len;
+}
+```
