@@ -16,7 +16,6 @@ This project implements an efficient corpus search engine inspired by the paper 
 - **Powerful Query Language**: Simple syntax for complex queries
 - **Multiple Search Strategies**: Automatically chooses the most efficient search algorithm based on set sizes
 - **Memory Optimization**: Uses integer encoding to minimize memory usage
-
 ## Corpus Format
 
 The tool works with annotated text corpora where each token has four attributes:
@@ -100,18 +99,14 @@ Queries are processed by:
 
 ## Usage :receipt:
 
-```cpp
-// Load corpus from file
-Corpus corpus = load_corpus("path/to/corpus.txt");
+### Start of program
+<img width="390" alt="Screenshot 2025-03-13 at 09 47 06" src="https://github.com/user-attachments/assets/f3b48797-af4a-446f-84f8-649775b97f54" />
 
-// Execute a query
-std::vector<Match> results = match(corpus, "[pos=\"ART\"] [lemma=\"house\"]");
+### Example querys run
+ - Singel query
+<img width="1499" alt="Screenshot 2025-03-13 at 09 46 50" src="https://github.com/user-attachments/assets/e57c0848-c06b-483a-912c-8845a0ba0dd9" />
 
-// Process results
-for (const Match& m : results) {
-    // Access match information
-    int sentence_index = m.sentence;
-    int position = m.position;
-    int length = m.len;
-}
-```
+- double
+<img width="1794" alt="Screenshot 2025-03-18 at 16 36 13" src="https://github.com/user-attachments/assets/bddaa6d5-c96d-4771-a4db-e94f3d1f03e6" />
+
+
